@@ -1,0 +1,78 @@
+%{
+#include <stdio.h>
+#include "vl.h"
+#define YYSTYPE OBJ
+
+static char *charbuf;
+
+#define YY_INPUT(buf, result, max_size) { \
+  int yyc; \
+  if (charbuf && *charbuf != '\0' && charbuf != NULL) \
+     yyc = *charbuf++; \
+  else if (charbuf == NULL) \
+     yyc = getchar(); \
+  else \
+     yyc = EOF; \
+  result = (EOF == yyc) ? 0 : (*(buf) = yyc, 1); \
+}
+
+%}
+
+Root = s:Stmts EOF { }
+
+Stmts = SEP*
+        - head:Stmt Comment?            { COMPILE(head) }
+        ( SEP - tail:Stmt Comment?      { printf("STMT2\n"); }
+        | SEP - Comment
+        )* SEP?                         { }
+      | SEP+                            { }
+
+Stmt = Assign
+     | Call
+     | Value
+
+Value  = v:NUMBER               { $$ = NODE(VALUE, v) }
+       | v:CONST                { $$ = NODE(CONST, v); }
+
+Assign = name:ID - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
+       | name:CONST - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
+
+Call   = msg:ID { $$ = NODE(SEND, msg) }
+
+Comment = - '#' (!EOL .)*
+
+NAME   = [a-zA-Z0-9_]+
+ID     = < [a-z_] NAME? ( '!' | '?' )? > { $$ = VlSymbol_new(yytext); }
+CONST  = < [A-Z] NAME? > { $$ = VlSymbol_new(yytext); }
+NUMBER = < [0-9]+ > { printf("CREATING NUMBER %d\n", atoi(yytext)); $$ = atoi(yytext); }
+ASSIGN = < '=' > &(!'=') { $$ = VlSymbol_new(yytext); }
+
+-      = [ \t]*
+EOL    = ( '\n' | '\r\n' | '\r' )
+SEP    = ( - (EOL | ';') )+
+EOF    = !.
+
+%%
+
+void VlBlock_compile(char *code) {
+     charbuf = code;
+     
+     if (code == NULL) {
+        while(yyparse()) {
+           printf("> ");
+        };
+     } else {
+          if (!yyparse()) {
+             //yyerror();
+          }
+     }
+}
+
+/*int main()
+{
+        printf("> ");
+        while (yyparse()) {
+              printf("> ");
+        }
+        return 0;
+}*/
