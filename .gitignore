@@ -1,2 +1,5 @@
 playground
 volang
+*.o
+vendor/peg/peg
+vendor/peg/leg
