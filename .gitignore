@@ -1,3 +1,5 @@
 playground
 volang
-vm/*.o
+*.o
+vendor/peg/peg
+vendor/peg/leg
