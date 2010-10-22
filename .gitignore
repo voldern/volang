@@ -3,3 +3,4 @@ volang
 *.o
 vendor/peg/peg
 vendor/peg/leg
+vm/grammar.c
