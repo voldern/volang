@@ -18,13 +18,13 @@ static char *charbuf;
 
 %}
 
-Root = s:Stmts EOF { }
+Root = s:Stmts EOF { COMPILE(s) }
 
 Stmts = SEP*
-        - head:Stmt Comment?            { COMPILE(head) }
-        ( SEP - tail:Stmt Comment?      { printf("STMT2\n"); }
+        - head:Stmt Comment?            { head = NODES(head) }
+        ( SEP - tail:Stmt Comment?      { PUSH_NODE(head, tail) }
         | SEP - Comment
-        )* SEP?                         { }
+        )* SEP?                         { $$ = head }
       | SEP+                            { }
 
 Stmt = Assign
@@ -35,9 +35,10 @@ Value  = v:NUMBER               { $$ = NODE(VALUE, v) }
        | v:CONST                { $$ = NODE(CONST, v); }
 
 Assign = name:ID - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
-       | name:CONST - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
+       | name:CONST - ASSIGN - val:Stmt { $$ = NODE2(SETCONST, name, val) }
 
 Call   = msg:ID { $$ = NODE(SEND, msg) }
+       | msg:CONST { $$ = NODE(GETCONST, msg) }
 
 Comment = - '#' (!EOL .)*
 

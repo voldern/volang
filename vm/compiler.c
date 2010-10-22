@@ -23,12 +23,23 @@ OBJ VlSymbol_new(const char *str) {
   return (OBJ)s;
 }
 
-void VlCompile(OBJ a) {
+void VlCompile(VM, OBJ a) {
+  if (!vm) {
+    printf("Defining VM\n");
+    vm = VlVM_new();
+  }
+  
   printf("Compiling!\n");
-  if (((VlNode *)a)->ntype == NODE_ASSIGN) {
-    char * str = ((VlSymbol *)(((VlNode *)a)->args[0]))->ptr;
+  if (((VlNode *)a)->ntype == NODE_SETCONST) {
+    char *str = ((VlSymbol *)(((VlNode *)a)->args[0]))->ptr;
     int val = (int)((VlNode *)((VlNode *)a)->args[1])->args[0];
-    printf("Test: %s = %d\n", str, val);
+    printf("Setting: %s = %d\n", str, val);
+    VlObject_const_set(vm, (OBJ)((VlNode *)a)->args[0], (OBJ)((VlNode *)a)->args[1]);
+  } else if (((VlNode *)a)->ntype == NODE_GETCONST) {
+    char *str = ((VlSymbol *)(((VlNode *)a)->args[0]))->ptr;
+    printf("Getting: %s ... ", str);
+    OBJ value = VlObject_const_get(vm, (OBJ)((VlNode *)a)->args[0]);
+    printf("%d", (int)value);
   } else {
     printf("Unknown node type!\n");
   }
