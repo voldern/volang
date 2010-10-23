@@ -2,10 +2,8 @@
 
 OBJ VlObject_const_get(VM, OBJ name) {
   khiter_t k = kh_get(OBJ, vm->consts, name);
-  printf("GETTING OBJ = %d\n", (int)name);
-
+  
   if (k != kh_end(vm->consts)) {
-    printf("GETTING OBJ = %d\n", (int)kh_value(vm->consts, k));
     return kh_value(vm->consts, k);
   }
 
@@ -20,8 +18,6 @@ OBJ VlObject_const_set(VM, OBJ name, OBJ value) {
   kh_value(vm->consts, k) = value;
   k = 0;
   k = kh_get(OBJ, vm->consts, name);
-
-  printf("SETTING OBJ = %d\n", (int)name);
 
   return value;
 }

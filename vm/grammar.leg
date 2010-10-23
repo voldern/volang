@@ -58,7 +58,6 @@ EOF    = !.
 
 void VlBlock_compile(char *code) {
      yyvm = VlVM_new();
-     printf("VLVM = %d\n", (int)yyvm);
      charbuf = code;
      
      if (code == NULL) {

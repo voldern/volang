@@ -14,7 +14,7 @@ OBJ VlNode_new(VlNodeType type, OBJ a, OBJ b, OBJ c) {
 void VlCompile(VM, OBJ a) {
   //struct VlVM *vm = VlVM_new();
   
-  printf("Compiling!\n");
+  printf("Compiling!\n\n");
   if (kv_size(((VlArray*)a)->kv) != 0) {
     size_t i;
     for (i = 0; i < kv_size(((VlArray*)a)->kv); i++) {
@@ -32,9 +32,8 @@ void VlCompile_node(VM, OBJ a) {
     VlObject_const_set(vm, (OBJ)((VlNode *)a)->args[0], (OBJ)((VlNode *)a)->args[1]);
   } else if (((VlNode *)a)->ntype == NODE_GETCONST) {
     char *str = ((VlSymbol *)(((VlNode *)a)->args[0]))->ptr;
-    printf("Getting: %s ... ", str);
     OBJ value = VlObject_const_get(vm, (OBJ)((VlNode *)a)->args[0]);
-    printf("%d", (int)value);
+    printf("Getting %s = %d\n", str, (int) (((VlNode *)value)->args[0]));
   } else {
     printf("Unknown node type!\n");
   }

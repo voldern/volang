@@ -22,7 +22,6 @@ static void VlSymbol_add(VM, const char *str, OBJ id) {
 }
 
 OBJ VlSymbol_new(VM, const char *str) {
-  printf("VLVM = %d\n", (int)vm);
   OBJ id = VlSymbol_lookup(vm, str);
   if (!id) {
   
