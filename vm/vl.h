@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "vendor/khash.h"
+#include "vendor/kvec.h"
 
 typedef unsigned long OBJ;
 
+KHASH_MAP_INIT_STR(str, OBJ);
 KHASH_MAP_INIT_INT(OBJ, OBJ);
 
 typedef enum {
@@ -30,7 +32,12 @@ typedef struct {
   size_t len;
 } VlSymbol;
 
+typedef struct {
+  kvec_t(OBJ) kv;
+} VlArray;
+
 typedef struct VlVM {
+  khash_t(str) *symbols;
   khash_t(OBJ) *consts;
 
   int debug;
@@ -40,8 +47,9 @@ typedef struct VlVM {
 #define VM	struct VlVM *vm
 
 OBJ VlNode_new(VlNodeType type, OBJ a, OBJ b, OBJ c);
-OBJ VlSymbol_new(const char *str);
+OBJ VlSymbol_new(VM, const char *str);
 void VlCompile(VM, OBJ a);
+void VlCompile_node(VM, OBJ a);
 
 /* vm */
 VlVM *VlVM_new();
@@ -50,9 +58,16 @@ VlVM *VlVM_new();
 OBJ VlObject_const_get(VM, OBJ name);
 OBJ VlObject_const_set(VM, OBJ name, OBJ value);
 
+/* array */
+OBJ VlArray_new();
+OBJ VlArray_new2(int argc, ...);
+#define VL_ARRAY_PUSH(X, I)	kv_push(OBJ, ((VlArray*)(X))->kv, (I))
+
 #define NODE(T,A)	VlNode_new(NODE_##T, (A), 0, 0)
 #define NODE2(T,A,B)	VlNode_new(NODE_##T, (A), (B), 0)
-#define COMPILE(A,B)      VlCompile((A), (B))
+#define NODES(I)	VlArray_new2(1, (I));
+#define PUSH_NODE(A,N)	VL_ARRAY_PUSH((A),(N))
+#define COMPILE(A,B)      VlCompile((A),(B))
 
 #define VL_MALLOC(T) (T *)malloc(sizeof(T))
 #define VL_MALLOC_N(T,N) (T *)calloc((N), sizeof(N))

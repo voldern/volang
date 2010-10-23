@@ -11,25 +11,20 @@ OBJ VlNode_new(VlNodeType type, OBJ a, OBJ b, OBJ c) {
   return (OBJ)n;
 }
 
-OBJ VlSymbol_new(const char *str) {
-  VlSymbol *s = VL_MALLOC(VlSymbol);
-  s->len = strlen(str);
-  s->ptr = VL_MALLOC_N(char, s->len+1);
-  memcpy(s->ptr, str, sizeof(char) * s->len);
-  s->ptr[s->len] = '\0';
-
-  printf("CREATING STRING: %s\n", s->ptr);
-
-  return (OBJ)s;
-}
-
 void VlCompile(VM, OBJ a) {
-  if (!vm) {
-    printf("Defining VM\n");
-    vm = VlVM_new();
-  }
+  //struct VlVM *vm = VlVM_new();
   
   printf("Compiling!\n");
+  if (kv_size(((VlArray*)a)->kv) != 0) {
+    size_t i;
+    for (i = 0; i < kv_size(((VlArray*)a)->kv); i++) {
+      OBJ n = kv_A(((VlArray*)a)->kv, i);
+      VlCompile_node(vm, n);
+    }
+  }
+}
+
+void VlCompile_node(VM, OBJ a) {
   if (((VlNode *)a)->ntype == NODE_SETCONST) {
     char *str = ((VlSymbol *)(((VlNode *)a)->args[0]))->ptr;
     int val = (int)((VlNode *)((VlNode *)a)->args[1])->args[0];

@@ -4,6 +4,7 @@
 #define YYSTYPE OBJ
 
 static char *charbuf;
+static VlVM *yyvm;
 
 #define YY_INPUT(buf, result, max_size) { \
   int yyc; \
@@ -18,14 +19,14 @@ static char *charbuf;
 
 %}
 
-Root = s:Stmts EOF { COMPILE(s) }
+Root = s:Stmts EOF { COMPILE(yyvm, s) }
 
 Stmts = SEP*
         - head:Stmt Comment?            { head = NODES(head) }
         ( SEP - tail:Stmt Comment?      { PUSH_NODE(head, tail) }
         | SEP - Comment
         )* SEP?                         { $$ = head }
-      | SEP+                            { }
+      | SEP+                            { $$ = VlArray_new2(0) }
 
 Stmt = Assign
      | Call
@@ -43,10 +44,10 @@ Call   = msg:ID { $$ = NODE(SEND, msg) }
 Comment = - '#' (!EOL .)*
 
 NAME   = [a-zA-Z0-9_]+
-ID     = < [a-z_] NAME? ( '!' | '?' )? > { $$ = VlSymbol_new(yytext); }
-CONST  = < [A-Z] NAME? > { $$ = VlSymbol_new(yytext); }
+ID     = < [a-z_] NAME? ( '!' | '?' )? > { $$ = VlSymbol_new(yyvm, yytext); }
+CONST  = < [A-Z] NAME? > { $$ = VlSymbol_new(yyvm, yytext); }
 NUMBER = < [0-9]+ > { printf("CREATING NUMBER %d\n", atoi(yytext)); $$ = atoi(yytext); }
-ASSIGN = < '=' > &(!'=') { $$ = VlSymbol_new(yytext); }
+ASSIGN = < '=' > &(!'=') { $$ = VlSymbol_new(yyvm, yytext); }
 
 -      = [ \t]*
 EOL    = ( '\n' | '\r\n' | '\r' )
@@ -56,6 +57,8 @@ EOF    = !.
 %%
 
 void VlBlock_compile(char *code) {
+     yyvm = VlVM_new();
+     printf("VLVM = %d\n", (int)yyvm);
      charbuf = code;
      
      if (code == NULL) {
