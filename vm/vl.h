@@ -71,6 +71,7 @@ OBJ VlArray_new2(int argc, ...);
 
 #define VL_MALLOC(T) (T *)malloc(sizeof(T))
 #define VL_MALLOC_N(T,N) (T *)calloc((N), sizeof(N))
+#define VL_FREE(P) free(P)
 
 void VlBlock_compile(char *code);
 
