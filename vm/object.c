@@ -1,5 +1,9 @@
 #include "vl.h"
 
+/*int TrObject_type(VM, OBJ obj) {
+  if (TR_IS_FIX(obj)) return TR_T_Fixnum;
+  }*/
+
 OBJ VlObject_const_get(VM, OBJ name) {
   khiter_t k = kh_get(OBJ, vm->consts, name);
   
