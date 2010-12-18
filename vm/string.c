@@ -34,7 +34,8 @@ OBJ VlSymbol_new(VM, const char *str) {
     id = (OBJ)s;
     VlSymbol_add(vm, s->ptr, id);
 
-    printf("CREATING STRING: %s\n", s->ptr);
+    if (vm->debug == 1)
+      printf("CREATING STRING: %s\n", s->ptr);
   }
 
   return id;

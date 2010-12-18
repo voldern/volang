@@ -6,6 +6,9 @@ VlVM *VlVM_new() {
   vm->symbols = kh_init(str);
   vm->debug = 0;
 
+  /* Initializing commonly used symbols */
+  VlSymbol_new(vm, "=");
+
   return vm;
 }
 

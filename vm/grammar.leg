@@ -46,7 +46,7 @@ Comment = - '#' (!EOL .)*
 NAME   = [a-zA-Z0-9_]+
 ID     = < [a-z_] NAME? ( '!' | '?' )? > { $$ = VlSymbol_new(yyvm, yytext); }
 CONST  = < [A-Z] NAME? > { $$ = VlSymbol_new(yyvm, yytext); }
-NUMBER = < [0-9]+ > { printf("CREATING NUMBER %d\n", atoi(yytext)); $$ = atoi(yytext); }
+NUMBER = < [0-9]+ > { if (yyvm->debug == 1) printf("CREATING NUMBER %d\n", atoi(yytext)); $$ = atoi(yytext); }
 ASSIGN = < '=' > &(!'=') { $$ = VlSymbol_new(yyvm, yytext); }
 
 -      = [ \t]*
@@ -56,8 +56,10 @@ EOF    = !.
 
 %%
 
-void VlBlock_compile(char *code) {
+void VlBlock_compile(char *code, int debug) {
      yyvm = VlVM_new();
+     yyvm->debug = debug;
+     
      charbuf = code;
      
      if (code == NULL) {

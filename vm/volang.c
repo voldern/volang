@@ -2,7 +2,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-//#include "grammar.c"
 #include "vl.h"
 
 #define VL_VERSION "0.1"
@@ -18,7 +17,7 @@ static int usage() {
   return 1;
 }
 
-static int eval_file(char *filename) {
+static int eval_file(char *filename, int debug) {
   FILE *fp;
   struct stat stats;
 
@@ -37,7 +36,7 @@ static int eval_file(char *filename) {
 
   if (fread(buf, 1, stats.st_size, fp) == stats.st_size) {
     //eval(buf, filename, verbose);
-    VlBlock_compile(buf);
+    VlBlock_compile(buf, debug);
   } else {
     perror(filename);
   }
@@ -49,6 +48,7 @@ static int eval_file(char *filename) {
 
 int main(int argc, char **argv) {
   int opt;
+  int debug = 1;
   
   while ((opt = getopt(argc, argv, "e:ivdh")) != -1) {
     switch(opt) {
@@ -63,20 +63,21 @@ int main(int argc, char **argv) {
       printf("Not implemented yet!\n");
       return 0;
     case 'e':
-      VlBlock_compile(optarg);
+      VlBlock_compile(optarg, debug);
       printf("\n");
       return 0;
     case 'v':
       printf("volang %s\n", VL_VERSION);
-      return 0;
-    default:
+      return 0;      
     case 'h':
       return usage();
     }
   }
 
   if (argc == 2 && strlen(argv[1]) > 0)
-    eval_file(argv[1]);
+    eval_file(argv[1], debug);
+  else
+    return usage();
 
   return 0;
 }

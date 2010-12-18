@@ -46,7 +46,7 @@ typedef struct VlVM {
 
 #define VM	struct VlVM *vm
 
-OBJ VlNode_new(VlNodeType type, OBJ a, OBJ b, OBJ c);
+OBJ VlNode_new(VM, VlNodeType type, OBJ a, OBJ b, OBJ c);
 OBJ VlSymbol_new(VM, const char *str);
 void VlCompile(VM, OBJ a);
 void VlCompile_node(VM, OBJ a);
@@ -63,8 +63,8 @@ OBJ VlArray_new();
 OBJ VlArray_new2(int argc, ...);
 #define VL_ARRAY_PUSH(X, I)	kv_push(OBJ, ((VlArray*)(X))->kv, (I))
 
-#define NODE(T,A)	VlNode_new(NODE_##T, (A), 0, 0)
-#define NODE2(T,A,B)	VlNode_new(NODE_##T, (A), (B), 0)
+#define NODE(T,A)	VlNode_new(yyvm, NODE_##T, (A), 0, 0)
+#define NODE2(T,A,B)	VlNode_new(yyvm, NODE_##T, (A), (B), 0)
 #define NODES(I)	VlArray_new2(1, (I));
 #define PUSH_NODE(A,N)	VL_ARRAY_PUSH((A),(N))
 #define COMPILE(A,B)      VlCompile((A),(B))
@@ -73,6 +73,8 @@ OBJ VlArray_new2(int argc, ...);
 #define VL_MALLOC_N(T,N) (T *)calloc((N), sizeof(N))
 #define VL_FREE(P) free(P)
 
-void VlBlock_compile(char *code);
+#define TR_IS_FIX(F) ((F) & 1)
+
+void VlBlock_compile(char *code, int debug);
 
 #endif /* _VOLANG_H_ */
