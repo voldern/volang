@@ -1,6 +1,6 @@
 #include "vl.h"
 
-OBJ VlNode_new(VlNodeType type, OBJ a, OBJ b, OBJ c) {
+OBJ VlNode_new(VM, VlNodeType type, OBJ a, OBJ b, OBJ c) {
   printf("CREATING OBJECT\n");
   VlNode *n = VL_MALLOC(VlNode);
   n->ntype = type;
