@@ -7,8 +7,14 @@ VlVM *VlVM_new() {
   vm->debug = 0;
 
   /* Initializing commonly used symbols */
-  VlSymbol_new(vm, "=");
+  /* VlSymbol_new(vm, "="); */
 
   return vm;
 }
 
+void VlVM_destroy(VlVM *vm) {
+  kh_destroy(OBJ, vm->consts);
+  kh_destroy(str, vm->symbols);
+
+  VL_FREE(vm);
+}

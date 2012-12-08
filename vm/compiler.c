@@ -34,8 +34,21 @@ void VlCompile_node(VM, OBJ a) {
     char *str = ((VlSymbol *)(((VlNode *)a)->args[0]))->ptr;
     OBJ value = VlObject_const_get(vm, (OBJ)((VlNode *)a)->args[0]);
     printf("Getting %s = %d\n", str, (int) (((VlNode *)value)->args[0]));
+  } else if (((VlNode *)a)->ntype == NODE_ADD) {
+    VlNode *rcv = (VlNode *)((VlNode *)a)->args[0];
+    VlNode *msg = (VlNode *)((VlNode *)a)->args[1];
+
+    if (rcv->ntype != NODE_VALUE || msg->ntype != NODE_VALUE) {
+      printf("Error: Only integer multiplication is currently supported.\n");
+      return;
+    }
+
+    int num1 = rcv->args[0];
+    int num2 = msg->args[0];
+    
+    printf("Multiplication: %d + %d = %d\n", num1, num2, num1 + num2);
   } else {
-    printf("Unknown node type!\n");
+    printf("Unknown node type %d!\n", ((VlNode *)a)->ntype);
   }
 }
 

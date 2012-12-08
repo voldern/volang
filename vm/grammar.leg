@@ -29,6 +29,7 @@ Stmts = SEP*
       | SEP+                            { $$ = VlArray_new2(0) }
 
 Stmt = Assign
+     | BinOp
      | Call
      | Value
 
@@ -40,6 +41,8 @@ Assign = name:ID - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
 
 Call   = msg:ID { $$ = NODE(SEND, msg) }
        | msg:CONST { $$ = NODE(GETCONST, msg) }
+
+BinOp  = rcv:Value - '+' - msg:Value { $$ = NODE2(ADD, rcv, msg) }
 
 Comment = - '#' (!EOL .)*
 
@@ -71,6 +74,8 @@ void VlBlock_compile(char *code, int debug) {
              //yyerror();
           }
      }
+
+     VlVM_destroy(yyvm);
 }
 
 /*int main()
