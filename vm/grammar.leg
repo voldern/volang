@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include "vl.h"
 #define YYSTYPE OBJ
+#define yyvm compiler->vm
 
 static char *charbuf;
-static VlVM *yyvm;
+static VlCompiler *compiler;
 
 #define YY_INPUT(buf, result, max_size) { \
   int yyc; \
@@ -19,7 +20,7 @@ static VlVM *yyvm;
 
 %}
 
-Root = s:Stmts EOF { COMPILE(yyvm, s) }
+Root = s:Stmts EOF { compiler->node = s }
 
 Stmts = SEP*
         - head:Stmt Comment?            { head = NODES(head) }
@@ -49,7 +50,7 @@ Comment = - '#' (!EOL .)*
 NAME   = [a-zA-Z0-9_]+
 ID     = < [a-z_] NAME? ( '!' | '?' )? > { $$ = VlSymbol_new(yyvm, yytext); }
 CONST  = < [A-Z] NAME? > { $$ = VlSymbol_new(yyvm, yytext); }
-NUMBER = < [0-9]+ > { if (yyvm->debug == 1) printf("CREATING NUMBER %d\n", atoi(yytext)); $$ = atoi(yytext); }
+NUMBER = < [0-9]+ > { $$ = atoi(yytext); }
 ASSIGN = < '=' > &(!'=') { $$ = VlSymbol_new(yyvm, yytext); }
 
 -      = [ \t]*
@@ -60,10 +61,10 @@ EOF    = !.
 %%
 
 void VlBlock_compile(char *code, int debug) {
-     yyvm = VlVM_new();
-     yyvm->debug = debug;
-     
      charbuf = code;
+     
+     compiler = VlCompiler_new(VlVM_new());
+     compiler->vm->debug = debug;
      
      if (code == NULL) {
         while(yyparse()) {
@@ -74,6 +75,8 @@ void VlBlock_compile(char *code, int debug) {
              //yyerror();
           }
      }
+
+     VlCompiler_compile(compiler);
 
      VlVM_destroy(yyvm);
 }

@@ -72,7 +72,7 @@ enum VlInstCode {
     VL_OP_DOH,
     VL_OP_MOVE,       /* A B      R[A] = R[B]  */
     VL_OP_LOADK,      /* A Bx     R[A] = K[Bx] */
-    TR_OP_ADD,        /* A B C    R[A] = RK[B] + RK[C] */
+    VL_OP_ADD        /* A B C    R[A] = RK[B] + RK[C] */
 };
 
 #endif

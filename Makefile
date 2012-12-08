@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -g
-SRC = vm/compiler.c vm/vm.c vm/string.c vm/array.c vm/object.c vm/grammar.c vm/volang.c
+SRC = vm/block.c vm/compiler.c vm/vm.c vm/string.c vm/array.c vm/object.c vm/grammar.c vm/volang.c
 OBJ = ${SRC:.c=.o}
 LEG = vendor/peg/leg
 

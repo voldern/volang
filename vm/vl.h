@@ -38,6 +38,17 @@ typedef struct {
   kvec_t(OBJ) kv;
 } VlArray;
 
+typedef struct VlBlock {
+  /* static */
+  kvec_t(OBJ) k;
+  kvec_t(OBJ) locals;
+  kvec_t(OBJ) upvals;
+  kvec_t(VlInst) code;
+  size_t regc;
+  size_t argc;
+  size_t line;
+} VlBlock;
+
 typedef struct VlVM {
   khash_t(str) *symbols;
   khash_t(OBJ) *consts;
@@ -46,16 +57,36 @@ typedef struct VlVM {
   
 } VlVM;
 
+typedef struct {
+  int line;
+  VlVM *vm;
+
+  kvec_t(OBJ) k;
+  kvec_t(VlInst) code;
+  size_t reg;
+  size_t regc;
+  size_t argc;
+  
+  OBJ node;
+} VlCompiler;
+
 #define VM	struct VlVM *vm
 
 OBJ VlNode_new(VM, VlNodeType type, OBJ a, OBJ b, OBJ c);
 OBJ VlSymbol_new(VM, const char *str);
-void VlCompile(VM, OBJ a);
-void VlCompile_node(VM, OBJ a);
+void VlCompiler_compile(VlCompiler *compiler);
+void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg);
 
 /* vm */
 VlVM *VlVM_new();
 void VlVM_destroy(VlVM *vm);
+
+/* compiler */
+VlCompiler *VlCompiler_new(VM);
+
+/* block */
+VlBlock *VlBlock_new();
+int VlBlock_push_value(VlCompiler *blk, OBJ k);
 
 /* object */
 OBJ VlObject_const_get(VM, OBJ name);
@@ -70,7 +101,6 @@ OBJ VlArray_new2(int argc, ...);
 #define NODE2(T,A,B)	VlNode_new(yyvm, NODE_##T, (A), (B), 0)
 #define NODES(I)	VlArray_new2(1, (I));
 #define PUSH_NODE(A,N)	VL_ARRAY_PUSH((A),(N))
-#define COMPILE(A,B)      VlCompile((A),(B))
 
 #define VL_MALLOC(T) (T *)malloc(sizeof(T))
 #define VL_MALLOC_N(T,N) (T *)calloc((N), sizeof(N))
