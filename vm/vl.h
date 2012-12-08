@@ -76,6 +76,7 @@ OBJ VlArray_new2(int argc, ...);
 #define VL_FREE(P) free(P)
 
 #define TR_IS_FIX(F) ((F) & 1)
+#define VL_STR_PTR(S) (((VlSymbol *)S)->ptr)
 
 void VlBlock_compile(char *code, int debug);
 
