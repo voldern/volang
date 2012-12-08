@@ -8,6 +8,7 @@
 #include "vendor/kvec.h"
 
 typedef unsigned long OBJ;
+typedef unsigned int VlInst;
 
 KHASH_MAP_INIT_STR(str, OBJ);
 KHASH_MAP_INIT_INT(OBJ, OBJ);

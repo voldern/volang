@@ -1,5 +1,15 @@
 #include "vl.h"
 
+#define PUSH_OP(BLK,I) ({ \
+  kv_push(VlInst, (BLK)->code, (I)); \
+  kv_size(BLK->code)-1; \
+})
+
+#define PUSH_OP_A(BLK, OP, A)         PUSH_OP(BLK, CREATE_ABC(TR_OP_##OP, A, 0, 0))
+#define PUSH_OP_AB(BLK, OP, A, B)     PUSH_OP(BLK, CREATE_ABC(TR_OP_##OP, A, B, 0))
+#define PUSH_OP_ABC(BLK, OP, A, B, C) PUSH_OP(BLK, CREATE_ABC(TR_OP_##OP, A, B, C))
+#define PUSH_OP_ABx(BLK, OP, A, Bx)   PUSH_OP(BLK, CREATE_ABx(TR_OP_##OP, A, Bx))
+
 #define NODE_ARG(N,I) (((VlNode *)N)->args[I])
 #define NODE_TYPE(N) (((VlNode *)N)->ntype)
 
@@ -27,8 +37,11 @@ void VlCompile(VM, OBJ a) {
   }
 }
 
-void VlCompile_node(VM, OBJ a) {
-  if (NODE_TYPE(a) == NODE_SETCONST) {
+void VlCompile_node(VM, VlBlock *b, OBJ a) {
+  if (NODE_TYPE(a) == NODE_VALUE) {
+    int i = VlBlock_push_value(b, NODE_ARG(a, 0));
+    PUSH_OP_ABx(b, LOADK, reg, i);
+  } else if (NODE_TYPE(a) == NODE_SETCONST) {
     char *str = VL_STR_PTR(NODE_ARG(a, 0));
     int val = (int)NODE_ARG(NODE_ARG(a, 1), 0);
     
