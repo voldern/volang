@@ -43,7 +43,8 @@ Assign = name:ID - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
 Call   = msg:ID { $$ = NODE(SEND, msg) }
        | msg:CONST { $$ = NODE(GETCONST, msg) }
 
-BinOp  = rcv:Value - '+' - msg:Value { $$ = NODE2(ADD, rcv, msg) }
+BinOp  = ( rcv:Call | rcv:Value )
+         - '+' - arg:Stmt  { $$ = NODE2(ADD, rcv, arg) }
 
 Comment = - '#' (!EOL .)*
 

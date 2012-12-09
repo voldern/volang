@@ -82,45 +82,41 @@ void VlCompiler_compile(VlCompiler *compiler) {
 }
 
 void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
-  REG(reg)
-  REG(reg)
+  REG(reg);
   
   if (NODE_TYPE(a) == NODE_VALUE) {
     int i = VlBlock_push_value(c, NODE_ARG(a, 0));
     PUSH_OP_ABx(c, LOADK, reg, i);
   } else if (NODE_TYPE(a) == NODE_SETCONST) {
-    char *str = VL_STR_PTR(NODE_ARG(a, 0));
-    int val = (int)NODE_ARG(NODE_ARG(a, 1), 0);
-    
-    printf("Setting: %s = %d\n", str, val);
-
     REG(reg);
     VlCompile_node(vm, c, NODE_ARG(a, 1), reg);
     PUSH_OP_ABx(c, SETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
-    
   } else if (NODE_TYPE(a) == NODE_GETCONST) {
-    /* char *str = VL_STR_PTR(NODE_ARG(a, 0)); */
-    /* OBJ value = VlObject_const_get(vm, (OBJ)NODE_ARG(a, 0)); */
-    /* printf("Getting %s = %d\n", str, (int) (NODE_ARG(value, 0))); */
     PUSH_OP_ABx(c, GETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
   } else if (NODE_TYPE(a) == NODE_ADD) {
     VlNode *rcv = (VlNode *)NODE_ARG(a, 0);
     VlNode *msg = (VlNode *)NODE_ARG(a, 1);
 
-    if (NODE_TYPE(rcv) != NODE_VALUE || NODE_TYPE(msg) != NODE_VALUE) {
-      printf("Error: Only integer multiplication is currently supported.\n");
-      return;
+    int rcvVal;
+    if (NODE_TYPE(rcv) == NODE_VALUE) {
+      rcvVal = VlBlock_push_value(c, NODE_ARG(rcv, 0)) | 0x100;
+    } else {
+      REG(reg);
+      VlCompile_node(vm, c, (OBJ)rcv, reg);
+      rcvVal = reg;
     }
 
-    int num1 = NODE_ARG(rcv, 0);
-    int num2 = NODE_ARG(msg, 0);
-
-    int rcvVal = VlBlock_push_value(c, num1) | 0x100;
-    int argVal = VlBlock_push_value(c, num2) | 0x100;
+    int argVal;
+    if (NODE_TYPE(msg) == NODE_VALUE) {
+      argVal = VlBlock_push_value(c, NODE_ARG(msg, 0)) | 0x100;
+    } else {
+      REG(reg+1);
+      VlCompile_node(vm, c, (OBJ)msg, reg+1);
+      argVal = reg + 1;
+    }
 
     REG(reg+1)
     
-    printf("Multiplication: %d + %d = %d\n", num1, num2, num1 + num2);
     PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal);
   } else {
     printf("Unknown node type %d!\n", NODE_TYPE(a));
