@@ -60,6 +60,7 @@ typedef struct VlVM {
 typedef struct {
   int line;
   VlVM *vm;
+  OBJ *stack;
 
   kvec_t(OBJ) k;
   kvec_t(VlInst) code;
@@ -80,6 +81,7 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg);
 /* vm */
 VlVM *VlVM_new();
 void VlVM_destroy(VlVM *vm);
+void VlVM_run(VlCompiler *compiler);
 
 /* compiler */
 VlCompiler *VlCompiler_new(VM);

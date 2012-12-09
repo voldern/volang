@@ -24,9 +24,9 @@ OBJ VlNode_new(VM, VlNodeType type, OBJ a, OBJ b, OBJ c) {
   n->args[1] = b;
   n->args[2] = c;
 
-  if (vm->debug) {
-    VlNode_debug(n);
-  }
+  /* if (vm->debug) { */
+  /*   VlNode_debug(n); */
+  /* } */
   
   return (OBJ)n;
 }
@@ -42,7 +42,7 @@ void VlNode_debug(VlNode *node) {
     break;
   case NODE_SETCONST:
     printf("setconst %s ", VL_STR_PTR(NODE_ARG(node, 0)));
-    VlNode_debug(NODE_ARG(node, 1));
+    VlNode_debug((VlNode *)NODE_ARG(node, 1));
     break;
   default:
     printf("Unknown node type %d\n", NODE_TYPE(node));
@@ -112,7 +112,9 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
     int rcvVal = VlBlock_push_value(c, num1) | 0x100;
     int argVal = VlBlock_push_value(c, num2) | 0x100;
 
-
+    if ((size_t)reg+1 >= c->regc)
+      c->regc = (size_t)reg+2;
+    
     printf("Multiplication: %d + %d = %d\n", num1, num2, num1 + num2);
     PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal);
   } else {
