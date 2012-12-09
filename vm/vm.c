@@ -40,10 +40,22 @@ void VlVM_run(VlCompiler *compiler) {
       return;
     case VL_OP_LOADK:
       printf("\tload\n");
+      stack[GETARG_A(i)] = k[GETARG_Bx(i)];
+      i = *++ip;
+      break;
+    case VL_OP_GETCONST:
+      stack[GETARG_A(i)] = VlObject_const_get(compiler->vm, k[GETARG_Bx(i)]);
+
+      printf("\tgetconst r%X %d\n", GETARG_A(i), (int)stack[GETARG_A(i)]);
+      i = *++ip;
+      break;
+    case VL_OP_SETCONST:
+      VlObject_const_set(compiler->vm, k[GETARG_Bx(i)], stack[GETARG_A(i)]);
+      printf("\tsetconst r%d %d\n", GETARG_A(i), (int)stack[GETARG_A(i)]);
       i = *++ip;
       break;
     case VL_OP_ADD:
-      printf("\tadd %d %d\n", (int)RK(GETARG_B(i)), (int)RK(GETARG_C(i)));
+      printf("\tadd r%d %d %d\n", GETARG_A(i), (int)RK(GETARG_B(i)), (int)RK(GETARG_C(i)));
 
       stack[GETARG_A(i)] = RK(GETARG_B(i)) + RK(GETARG_C(i));
       i = *++ip;

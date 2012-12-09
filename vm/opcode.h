@@ -72,6 +72,8 @@ enum VlInstCode {
     VL_OP_DOH,
     VL_OP_MOVE,       /* A B      R[A] = R[B]  */
     VL_OP_LOADK,      /* A Bx     R[A] = K[Bx] */
+    VL_OP_GETCONST,   /* A Bx     R[A] = Consts[k[Bx]] */
+    VL_OP_SETCONST,   /* A Bx     Consts[k[Bx]] = R[A] */
     VL_OP_ADD        /* A B C    R[A] = RK[B] + RK[C] */
 };
 

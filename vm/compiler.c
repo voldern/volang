@@ -7,10 +7,12 @@
   kv_size(BLK->code)-1; \
 })
 
-#define PUSH_OP_A(BLK, OP, A)         PUSH_OP(BLK, CREATE_ABC(VL_OP_##OP, A, 0, 0))
-#define PUSH_OP_AB(BLK, OP, A, B)     PUSH_OP(BLK, CREATE_ABC(VL_OP_##OP, A, B, 0))
+#define REG(R) if ((size_t)R >= c->regc) c->regc = (size_t)R+1;
+
+#define PUSH_OP_A(BLK, OP, A) PUSH_OP(BLK, CREATE_ABC(VL_OP_##OP, A, 0, 0))
+#define PUSH_OP_AB(BLK, OP, A, B) PUSH_OP(BLK, CREATE_ABC(VL_OP_##OP, A, B, 0))
 #define PUSH_OP_ABC(BLK, OP, A, B, C) PUSH_OP(BLK, CREATE_ABC(VL_OP_##OP, A, B, C))
-#define PUSH_OP_ABx(BLK, OP, A, Bx)   PUSH_OP(BLK, CREATE_ABx(VL_OP_##OP, A, Bx))
+#define PUSH_OP_ABx(BLK, OP, A, Bx) PUSH_OP(BLK, CREATE_ABx(VL_OP_##OP, A, Bx))
 
 #define NODE_ARG(N,I) (((VlNode *)N)->args[I])
 #define NODE_TYPE(N) (((VlNode *)N)->ntype)
@@ -80,8 +82,8 @@ void VlCompiler_compile(VlCompiler *compiler) {
 }
 
 void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
-  if ((size_t)reg >= c->regc)
-    c->regc = (size_t)reg+1;
+  REG(reg)
+  REG(reg)
   
   if (NODE_TYPE(a) == NODE_VALUE) {
     int i = VlBlock_push_value(c, NODE_ARG(a, 0));
@@ -91,12 +93,16 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
     int val = (int)NODE_ARG(NODE_ARG(a, 1), 0);
     
     printf("Setting: %s = %d\n", str, val);
-    VlObject_const_set(vm, (OBJ)NODE_ARG(a, 0), (OBJ)NODE_ARG(a, 1));
-  } else if (NODE_TYPE(a) == NODE_GETCONST) {
-    char *str = VL_STR_PTR(NODE_ARG(a, 0));
-    OBJ value = VlObject_const_get(vm, (OBJ)NODE_ARG(a, 0));
+
+    REG(reg);
+    VlCompile_node(vm, c, NODE_ARG(a, 1), reg);
+    PUSH_OP_ABx(c, SETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
     
-    printf("Getting %s = %d\n", str, (int) (NODE_ARG(value, 0)));
+  } else if (NODE_TYPE(a) == NODE_GETCONST) {
+    /* char *str = VL_STR_PTR(NODE_ARG(a, 0)); */
+    /* OBJ value = VlObject_const_get(vm, (OBJ)NODE_ARG(a, 0)); */
+    /* printf("Getting %s = %d\n", str, (int) (NODE_ARG(value, 0))); */
+    PUSH_OP_ABx(c, GETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
   } else if (NODE_TYPE(a) == NODE_ADD) {
     VlNode *rcv = (VlNode *)NODE_ARG(a, 0);
     VlNode *msg = (VlNode *)NODE_ARG(a, 1);
@@ -112,8 +118,7 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
     int rcvVal = VlBlock_push_value(c, num1) | 0x100;
     int argVal = VlBlock_push_value(c, num2) | 0x100;
 
-    if ((size_t)reg+1 >= c->regc)
-      c->regc = (size_t)reg+2;
+    REG(reg+1)
     
     printf("Multiplication: %d + %d = %d\n", num1, num2, num1 + num2);
     PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal);
