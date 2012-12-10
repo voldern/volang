@@ -120,6 +120,8 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
     PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal);
   } else if (NODE_TYPE(a) == NODE_INVOKE) {
     printf("INVOKE!\n");
+  } else if (NODE_TYPE(a) == NODE_RETURN) {
+    PUSH_OP_A(c, DOH, NODE_ARG(a, 0));
   } else {
     printf("Unknown node type %d!\n", NODE_TYPE(a));
   }

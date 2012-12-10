@@ -20,7 +20,7 @@ static VlCompiler *compiler;
 
 %}
 
-Root = s:Stmts EOF { compiler->node = s }
+Root = s:Stmts EOF { PUSH_NODE(s, NODE(RETURN, 0)); compiler->node = s }
 
 Stmts = SEP*
         - head:Stmt Comment?            { head = NODES(head) }
@@ -81,7 +81,7 @@ void VlBlock_compile(char *code, int debug) {
      VlCompiler_compile(compiler);
      VlVM_run(compiler);
 
-     VlVM_destroy(yyvm);
+     VlVM_destroy(compiler->vm);
 }
 
 /*int main()
