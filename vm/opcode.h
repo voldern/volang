@@ -19,14 +19,8 @@
 #define POS_B     (POS_C + SIZE_C)
 #define POS_Bx    POS_C
 
-// Make sure the value fits into 32 bits
-#if SIZE_Bx < 31
+// Bx is unsigned
 #define MAXARG_Bx   ((1<<SIZE_Bx)-1)
-#define MAXARG_sBx  (MAXARG_Bx>>1)         /* `sBx' is signed */
-#else
-#define MAXARG_Bx   MAX_INT
-#define MAXARG_sBx  MAX_INT
-#endif
 
 /* creates a mask with `n' 1 bits at position `p' */
 #define MASK1(n,p)  ((~((~(VlInst)0)<<n))<<p)
@@ -35,8 +29,7 @@
 #define MASK0(n,p)  (~MASK1(n,p))
 
 /* the following macros help to manipulate instructions (VlInst) */
-
-#define GET_OPCODE(i) (cast(int, ((i)>>POS_OP) & MASK1(SIZE_OP,0)))
+#define GET_OPCODE(i) (cast(int, ((i)>>POS_OP) & MASK1(SIZE_OP,POS_OP)))
 #define SET_OPCODE(i,o) ((i) = (((i)&MASK0(SIZE_OP,POS_OP)) | \
     ((cast(VlInst, o)<<POS_OP)&MASK1(SIZE_OP,POS_OP))))
 
@@ -55,9 +48,6 @@
 #define GETARG_Bx(i)  (cast(int, ((i)>>POS_Bx) & MASK1(SIZE_Bx,0)))
 #define SETARG_Bx(i,b)  ((i) = (((i)&MASK0(SIZE_Bx,POS_Bx)) | \
     ((cast(VlInst, b)<<POS_Bx)&MASK1(SIZE_Bx,POS_Bx))))
-
-#define GETARG_sBx(i) cast(int, GETARG_Bx(i)-MAXARG_sBx)
-#define SETARG_sBx(i,b) SETARG_Bx((i),cast(unsigned int, (b)+MAXARG_sBx))
 
 #define CREATE_ABC(o,a,b,c) ((cast(VlInst, o)<<POS_OP) \
       | (cast(VlInst, a)<<POS_A) \

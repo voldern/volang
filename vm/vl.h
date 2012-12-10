@@ -19,7 +19,7 @@ typedef enum {
   NODE_ASSIGN,
   NODE_SETCONST,
   NODE_GETCONST,
-  NODE_SEND,
+  NODE_INVOKE,
   NODE_ADD
 } VlNodeType;
 

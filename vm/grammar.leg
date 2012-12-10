@@ -40,11 +40,12 @@ Value  = v:NUMBER               { $$ = NODE(VALUE, v) }
 Assign = name:ID - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
        | name:CONST - ASSIGN - val:Stmt { $$ = NODE2(SETCONST, name, val) }
 
-Call   = msg:ID { $$ = NODE(SEND, msg) }
+Call   = msg:ID { $$ = NODE(INVOKE, msg) }
        | msg:CONST { $$ = NODE(GETCONST, msg) }
 
 BinOp  = ( rcv:Call | rcv:Value )
-         - '+' - arg:Stmt  { $$ = NODE2(ADD, rcv, arg) }
+       - '+' - arg:Stmt  { $$ = NODE2(ADD, rcv, arg) }
+
 
 Comment = - '#' (!EOL .)*
 
