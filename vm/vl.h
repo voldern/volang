@@ -74,9 +74,9 @@ typedef struct {
 #define VM	struct VlVM *vm
 
 OBJ VlNode_new(VM, VlNodeType type, OBJ a, OBJ b, OBJ c);
+
 OBJ VlSymbol_new(VM, const char *str);
-void VlCompiler_compile(VlCompiler *compiler);
-void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg);
+void VlSymbol_destroy(VM);
 
 /* vm */
 VlVM *VlVM_new();
@@ -84,6 +84,8 @@ void VlVM_destroy(VlVM *vm);
 void VlVM_run(VlCompiler *compiler);
 
 /* compiler */
+void VlCompiler_compile(VlCompiler *compiler);
+void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg);
 VlCompiler *VlCompiler_new(VM);
 
 /* block */

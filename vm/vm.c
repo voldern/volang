@@ -15,7 +15,8 @@ VlVM *VlVM_new() {
 
 void VlVM_destroy(VlVM *vm) {
   kh_destroy(OBJ, vm->consts);
-  kh_destroy(str, vm->symbols);
+
+  VlSymbol_destroy(vm);
 
   VL_FREE(vm);
 }

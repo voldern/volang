@@ -41,4 +41,19 @@ OBJ VlSymbol_new(VM, const char *str) {
   return id;
 }
 
+void VlSymbol_destroy(VM) {
+  khiter_t k;
+  khash_t(str) *kh = vm->symbols;
+  VlSymbol *symbol;
 
+  for (k = kh_begin(kh); k != kh_end(kh); ++k) {
+    if (kh_exist(kh, k)) {
+      symbol = (VlSymbol *)kh_value(kh, k);
+      
+      VL_FREE(symbol->ptr);
+      VL_FREE(symbol);
+    }
+  }
+
+  kh_destroy(str, kh);
+}
