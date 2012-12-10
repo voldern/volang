@@ -61,6 +61,12 @@ void VlVM_run(VlCompiler *compiler) {
       stack[GETARG_A(i)] = RK(GETARG_B(i)) + RK(GETARG_C(i));
       i = *++ip;
       break;
+    case VL_OP_SUBTRACT:
+      printf("\tsubtract r%d %d %d\n", GETARG_A(i), (int)RK(GETARG_B(i)), (int)RK(GETARG_C(i)));
+
+      stack[GETARG_A(i)] = RK(GETARG_B(i)) - RK(GETARG_C(i));
+      i = *++ip;
+      break;
     default:
       printf("Unknown opcode: %d\n", (int)GET_OPCODE(i));
       return;

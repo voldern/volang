@@ -67,10 +67,15 @@ VlCompiler *VlCompiler_new(VM) {
   return c;
 }
 
-void VlCompiler_compile(VlCompiler *compiler) {
+unsigned int VlCompiler_compile(VlCompiler *compiler) {
   if (compiler->vm->debug) {
     printf("Compiling!\n");
   }
+
+	if ((VlArray *)compiler->node == NULL) {
+		printf("Error: empty AST\n");
+		return 1;
+	}
   
   if (kv_size(((VlArray*)compiler->node)->kv) != 0) {
     size_t i;
@@ -79,6 +84,8 @@ void VlCompiler_compile(VlCompiler *compiler) {
       VlCompile_node(compiler->vm, compiler, n, 0);
     }
   }
+
+	return 0;
 }
 
 void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
@@ -94,6 +101,7 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
   } else if (NODE_TYPE(a) == NODE_GETCONST) {
     PUSH_OP_ABx(c, GETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
   } else if (NODE_TYPE(a) == NODE_ADD) {
+		// TODO: Refactor, duplicated in SUBTRACT
     VlNode *rcv = (VlNode *)NODE_ARG(a, 0);
     VlNode *msg = (VlNode *)NODE_ARG(a, 1);
 
@@ -118,6 +126,31 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
     REG(reg+1)
     
     PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal);
+  } else if (NODE_TYPE(a) == NODE_SUBTRACT) {
+    VlNode *rcv = (VlNode *)NODE_ARG(a, 0);
+    VlNode *msg = (VlNode *)NODE_ARG(a, 1);
+
+    int rcvVal;
+    if (NODE_TYPE(rcv) == NODE_VALUE) {
+      rcvVal = VlBlock_push_value(c, NODE_ARG(rcv, 0)) | 0x100;
+    } else {
+      REG(reg);
+      VlCompile_node(vm, c, (OBJ)rcv, reg);
+      rcvVal = reg;
+    }
+
+    int argVal;
+    if (NODE_TYPE(msg) == NODE_VALUE) {
+      argVal = VlBlock_push_value(c, NODE_ARG(msg, 0)) | 0x100;
+    } else {
+      REG(reg+1);
+      VlCompile_node(vm, c, (OBJ)msg, reg+1);
+      argVal = reg + 1;
+    }
+
+    REG(reg+1)
+
+    PUSH_OP_ABC(c, SUBTRACT, reg, rcvVal, argVal);
   } else if (NODE_TYPE(a) == NODE_INVOKE) {
     printf("INVOKE!\n");
   } else if (NODE_TYPE(a) == NODE_RETURN) {

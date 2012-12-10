@@ -21,7 +21,8 @@ typedef enum {
   NODE_SETCONST,
   NODE_GETCONST,
   NODE_INVOKE,
-  NODE_ADD
+  NODE_ADD,
+  NODE_SUBTRACT
 } VlNodeType;
 
 typedef struct {
@@ -85,7 +86,7 @@ void VlVM_destroy(VlVM *vm);
 void VlVM_run(VlCompiler *compiler);
 
 /* compiler */
-void VlCompiler_compile(VlCompiler *compiler);
+unsigned int VlCompiler_compile(VlCompiler *compiler);
 void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg);
 VlCompiler *VlCompiler_new(VM);
 

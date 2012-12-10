@@ -19,5 +19,6 @@ vm/grammar.c: ${LEG} vm/grammar.leg
 	@${LEG} -o vm/grammar.c vm/grammar.leg
 
 clean:
-	$(RM) volang vm/*.o vm/grammar.c
+	$(RM) vm/*.o vm/grammar.c
+	$(RM) volang
 rebuild: clean volang

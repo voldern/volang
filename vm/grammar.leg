@@ -44,7 +44,10 @@ Call   = msg:ID { $$ = NODE(INVOKE, msg) }
        | msg:CONST { $$ = NODE(GETCONST, msg) }
 
 BinOp  = ( rcv:Call | rcv:Value )
-       - '+' - arg:Stmt  { $$ = NODE2(ADD, rcv, arg) }
+       - 
+	( '-' - arg:Stmt  { $$ = NODE2(SUBTRACT, rcv, arg) }
+	| '+' - arg:Stmt  { $$ = NODE2(ADD, rcv, arg) }
+	)
 
 
 Comment = - '#' (!EOL .)*
@@ -78,8 +81,10 @@ void VlBlock_compile(char *code, int debug) {
           }
      }
 
-     VlCompiler_compile(compiler);
-     VlVM_run(compiler);
+     unsigned int status = VlCompiler_compile(compiler);
+		 if (status == 0) {
+			 VlVM_run(compiler);
+		 }
 
      VlVM_destroy(compiler->vm);
 }
