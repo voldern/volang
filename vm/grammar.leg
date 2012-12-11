@@ -36,6 +36,7 @@ Stmt = Assign
 
 Value  = v:NUMBER               { $$ = NODE(VALUE, v) }
        | v:CONST                { $$ = NODE(CONST, v); }
+       | '(' - Stmt - ')'
 
 Assign = name:ID - ASSIGN - val:Stmt { $$ = NODE2(ASSIGN, name, val) }
        | name:CONST - ASSIGN - val:Stmt { $$ = NODE2(SETCONST, name, val) }
