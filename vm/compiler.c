@@ -1,11 +1,10 @@
 #include "vl.h"
 #include "opcode.h"
 
-#define PUSH_OP(BLK,I) ({ \
-  printf("Pushing op: %X\n", (I)); \
-  kv_push(VlInst, (BLK)->code, (I)); \
-  kv_size(BLK->code)-1; \
-})
+#define PUSH_OP(BLK,I) ({                       \
+      printf("Pushing op: %X\n", (I));          \
+      kv_push(VlInst, (BLK)->code, (I));        \
+    })
 
 #define REG(R) if ((size_t)R >= c->regc) c->regc = (size_t)R+1;
 
@@ -29,7 +28,7 @@ OBJ VlNode_new(VM, VlNodeType type, OBJ a, OBJ b, OBJ c) {
   /* if (vm->debug) { */
   /*   VlNode_debug(n); */
   /* } */
-  
+
   return (OBJ)n;
 }
 
@@ -60,8 +59,9 @@ VlCompiler *VlCompiler_new(VM) {
   c->regc = 0;
   c->argc = 0;
   c->node = (OBJ)0;
-  
+
   kv_init(c->k);
+  kv_init(c->locals);
   kv_init(c->code);
   
   return c;
@@ -72,11 +72,11 @@ unsigned int VlCompiler_compile(VlCompiler *compiler) {
     printf("Compiling!\n");
   }
 
-	if ((VlArray *)compiler->node == NULL) {
-		printf("Error: empty AST\n");
-		return 1;
-	}
-  
+  if ((VlArray *)compiler->node == NULL) {
+    printf("Error: empty AST\n");
+    return 1;
+  }
+
   if (kv_size(((VlArray*)compiler->node)->kv) != 0) {
     size_t i;
     for (i = 0; i < kv_size(((VlArray*)compiler->node)->kv); i++) {
@@ -85,27 +85,45 @@ unsigned int VlCompiler_compile(VlCompiler *compiler) {
     }
   }
 
-	return 0;
+  return 0;
 }
 
 void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
   REG(reg);
-  
-  if (NODE_TYPE(a) == NODE_VALUE) {
-    int i = VlBlock_push_value(c, NODE_ARG(a, 0));
-    PUSH_OP_ABx(c, LOADK, reg, i);
-  } else if (NODE_TYPE(a) == NODE_SETCONST) {
+  int rcvVal;
+  int argVal;
+  VlNode *rcv;
+  VlNode *msg;
+
+  switch (NODE_TYPE(a)) {
+  case NODE_VALUE:
+    PUSH_OP_ABx(c, LOADK, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
+    break;
+  case NODE_SETCONST:
     REG(reg);
     VlCompile_node(vm, c, NODE_ARG(a, 1), reg);
     PUSH_OP_ABx(c, SETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
-  } else if (NODE_TYPE(a) == NODE_GETCONST) {
+    break;
+  case NODE_GETCONST:
     PUSH_OP_ABx(c, GETCONST, reg, VlBlock_push_value(c, NODE_ARG(a, 0)));
-  } else if (NODE_TYPE(a) == NODE_ADD) {
-		// TODO: Refactor, duplicated in SUBTRACT
-    VlNode *rcv = (VlNode *)NODE_ARG(a, 0);
-    VlNode *msg = (VlNode *)NODE_ARG(a, 1);
+    break;
+  case NODE_ASSIGN: {
+    REG(reg);
+    VlCompile_node(vm, c, NODE_ARG(a, 1), reg);
 
-    int rcvVal;
+    int i = VlBlock_push_local(c, (OBJ)NODE_ARG(a, 0));
+    if (i != reg) {
+      PUSH_OP_AB(c, MOVE, i, reg);
+    }
+  } break;
+  case NODE_ADD:
+  case NODE_SUB:
+  case NODE_MUL:
+  case NODE_DIV:
+  case NODE_MOD:
+    rcv = (VlNode *)NODE_ARG(a, 0);
+    msg = (VlNode *)NODE_ARG(a, 1);
+
     if (NODE_TYPE(rcv) == NODE_VALUE) {
       rcvVal = VlBlock_push_value(c, NODE_ARG(rcv, 0)) | 0x100;
     } else {
@@ -114,7 +132,6 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
       rcvVal = reg;
     }
 
-    int argVal;
     if (NODE_TYPE(msg) == NODE_VALUE) {
       argVal = VlBlock_push_value(c, NODE_ARG(msg, 0)) | 0x100;
     } else {
@@ -123,39 +140,30 @@ void VlCompile_node(VM, VlCompiler *c, OBJ a, int reg) {
       argVal = reg + 1;
     }
 
-    REG(reg+1)
-    
-    PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal);
-  } else if (NODE_TYPE(a) == NODE_SUBTRACT) {
-    VlNode *rcv = (VlNode *)NODE_ARG(a, 0);
-    VlNode *msg = (VlNode *)NODE_ARG(a, 1);
+    REG(reg+1);
 
-    int rcvVal;
-    if (NODE_TYPE(rcv) == NODE_VALUE) {
-      rcvVal = VlBlock_push_value(c, NODE_ARG(rcv, 0)) | 0x100;
-    } else {
-      REG(reg);
-      VlCompile_node(vm, c, (OBJ)rcv, reg);
-      rcvVal = reg;
+    switch (NODE_TYPE(a)) {
+    case NODE_ADD: PUSH_OP_ABC(c, ADD, reg, rcvVal, argVal); break;
+    case NODE_SUB: PUSH_OP_ABC(c, SUB, reg, rcvVal, argVal); break;
+    case NODE_MUL: PUSH_OP_ABC(c, MUL, reg, rcvVal, argVal); break;
+    case NODE_DIV: PUSH_OP_ABC(c, DIV, reg, rcvVal, argVal); break;
+    case NODE_MOD: PUSH_OP_ABC(c, MOD, reg, rcvVal, argVal); break;
     }
-
-    int argVal;
-    if (NODE_TYPE(msg) == NODE_VALUE) {
-      argVal = VlBlock_push_value(c, NODE_ARG(msg, 0)) | 0x100;
-    } else {
-      REG(reg+1);
-      VlCompile_node(vm, c, (OBJ)msg, reg+1);
-      argVal = reg + 1;
-    }
-
-    REG(reg+1)
-
-    PUSH_OP_ABC(c, SUBTRACT, reg, rcvVal, argVal);
-  } else if (NODE_TYPE(a) == NODE_INVOKE) {
-    printf("INVOKE!\n");
-  } else if (NODE_TYPE(a) == NODE_RETURN) {
+    break;
+  case NODE_RETURN:
     PUSH_OP_A(c, DOH, NODE_ARG(a, 0));
-  } else {
+    break;
+  case NODE_INVOKE: {
+    int i = VlBlock_find_local(c, (OBJ)NODE_ARG(a, 0));
+    printf("move %s %d\n", VL_STR_PTR(NODE_ARG(a, 0)), i);
+    
+    if (i != -1 && reg != i) {
+      PUSH_OP_AB(c, MOVE, reg, i);
+    } else {
+      printf("could not find %s\t", VL_STR_PTR(NODE_ARG(a, 0)));
+    }
+  } break;
+  default:
     printf("Unknown node type %d!\n", NODE_TYPE(a));
   }
 }

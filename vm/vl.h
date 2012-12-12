@@ -22,7 +22,10 @@ typedef enum {
   NODE_GETCONST,
   NODE_INVOKE,
   NODE_ADD,
-  NODE_SUBTRACT
+  NODE_SUB,
+  NODE_MUL,
+  NODE_DIV,
+  NODE_MOD
 } VlNodeType;
 
 typedef struct {
@@ -65,6 +68,7 @@ typedef struct {
   OBJ *stack;
 
   kvec_t(OBJ) k;
+  kvec_t(OBJ) locals;
   kvec_t(VlInst) code;
   size_t reg;
   size_t regc;
@@ -82,8 +86,12 @@ void VlSymbol_destroy(VM);
 
 /* vm */
 VlVM *VlVM_new();
-void VlVM_destroy(VlVM *vm);
+void VlVM_destroy(VM);
 void VlVM_run(VlCompiler *compiler);
+
+OBJ VlVM_const_get(VM, OBJ name);
+OBJ VlVM_const_set(VM, OBJ name, OBJ value);
+
 
 /* compiler */
 unsigned int VlCompiler_compile(VlCompiler *compiler);
@@ -93,10 +101,8 @@ VlCompiler *VlCompiler_new(VM);
 /* block */
 VlBlock *VlBlock_new();
 int VlBlock_push_value(VlCompiler *blk, OBJ k);
-
-/* object */
-OBJ VlObject_const_get(VM, OBJ name);
-OBJ VlObject_const_set(VM, OBJ name, OBJ value);
+int VlBlock_find_local(VlCompiler *blk, OBJ name);
+int VlBlock_push_local(VlCompiler *blk, OBJ name);
 
 /* array */
 OBJ VlArray_new();

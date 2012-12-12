@@ -47,7 +47,10 @@ Call   = msg:ID { $$ = NODE(INVOKE, msg) }
 BinOp  = ( rcv:Call | rcv:Value )
        - 
        ( '+' - arg:Stmt  { $$ = NODE2(ADD, rcv, arg) }
-       | '-' - arg:Stmt  { $$ = NODE2(SUBTRACT, rcv, arg) }
+       | '-' - arg:Stmt  { $$ = NODE2(SUB, rcv, arg) }
+       | '*' - arg:Stmt  { $$ = NODE2(MUL, rcv, arg) }
+       | '/' - arg:Stmt  { $$ = NODE2(DIV, rcv, arg) }
+       | '%' - arg:Stmt  { $$ = NODE2(MOD, rcv, arg) }
        )
 
 
