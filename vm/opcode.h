@@ -65,7 +65,10 @@ enum VlInstCode {
     VL_OP_GETCONST,   /* A Bx     R[A] = Consts[k[Bx]] */
     VL_OP_SETCONST,   /* A Bx     Consts[k[Bx]] = R[A] */
     VL_OP_ADD,        /* A B C    R[A] = RK[B] + RK[C] */
-    VL_OP_SUBTRACT        /* A B C    R[A] = RK[B] + RK[C] */
+    VL_OP_SUB,        /* A B C    R[A] = RK[B] - RK[C] */
+    VL_OP_MUL,        /* A B C    R[A] = RK[B] * RK[C] */
+    VL_OP_DIV,        /* A B C    R[A] = RK[B] / RK[C] */
+    VL_OP_MOD        /* A B C    R[A] = RK[B] % RK[C] */
 };
 
 #endif
